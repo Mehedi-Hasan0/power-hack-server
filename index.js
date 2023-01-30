@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 app.use(express.json());
 const cors = require("cors");
 app.use(cors());
@@ -15,7 +16,35 @@ const JWT_SECRET =
     "hvdvay6ert72839289()aiyg8t87qt72393293883uhefiuh78ttq3ifi78272jbkj?[]]pou89ywe";
 
 const mongoUrl =
-    "mongodb+srv://powerHackDB:3LgJnx1ieiwXFTa0@cluster0.69zqaep.mongodb.net/?retryWrites=true&w=majority"
+    "mongodb+srv://powerHackDB:3LgJnx1ieiwXFTa0@cluster0.69zqaep.mongodb.net/?retryWrites=true&w=majority";
+
+
+///////////////////
+const client = new MongoClient(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+async function run() {
+    try {
+        const tableCollection = client.db('powerHack').collection('tableData');
+
+        app.get('/api/billing-list', async (req, res) => {
+            const query = {};
+            const cursor = tableCollection.find(query).sort({ date: -1 });
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        })
+
+        app.post('/api/add-billing', async (req, res) => {
+            const billing = req.body;
+            const result = await tableCollection.insertOne(billing);
+            res.send(result);
+        })
+    }
+    finally {
+
+    }
+}
+run().catch(err => console.log(err));
+///////////////////
 
 mongoose
     .connect(mongoUrl, {
